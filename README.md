@@ -56,7 +56,7 @@ fdnd.dnd((files) => {
 });
 ```
 
-* toTree(callback) `Convert file collection structure to tree data structure`
+* toTree() `Convert file collection structure to tree data structure`
 
 ```js
   const treeData = fdnd.toTree();
