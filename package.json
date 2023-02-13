@@ -1,6 +1,6 @@
 {
   "name": "filednd",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "file dnd",
   "module": "./index.js",
   "main": "dist/filednd.js",
