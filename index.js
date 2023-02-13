@@ -130,6 +130,7 @@ export class FileDND {
                 this.ele.addEventListener(eventName, dragEvent);
             });
             const dropEvent = (event) => {
+                event.stopPropagation();
                 event.preventDefault();
                 const df = event.dataTransfer;
                 const items = df.items;
