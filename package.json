@@ -1,6 +1,6 @@
 {
   "name": "filednd",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "file dnd",
   "module": "./index.js",
   "main": "dist/filednd.js",
@@ -20,8 +20,8 @@
   },
   "homepage": "https://github.com/deyihu/filednd#readme",
   "files": [
-    "./dist/",
-    "./index.js"
+    "dist",
+    "index.js"
   ],
   "devDependencies": {
     "cross-env": "^5.1.4",
