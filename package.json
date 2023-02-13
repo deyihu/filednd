@@ -1,7 +1,7 @@
 {
   "name": "filednd",
   "version": "0.1.0",
-  "description": "",
+  "description": "file dnd",
   "module": "./index.js",
   "main": "dist/filednd.js",
   "scripts": {
