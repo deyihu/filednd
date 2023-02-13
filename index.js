@@ -12,6 +12,16 @@ const uuid = () => {
     return uid;
 };
 
+function setFilePath(fileEntry, parentFileEntry) {
+    const folder = parentFileEntry ? parentFileEntry.path : '/';
+    if (fileEntry.isFile) {
+        fileEntry.path = `${folder}${fileEntry.name}`;
+    }
+    if (fileEntry.isDirectory) {
+        fileEntry.path = `${folder}${fileEntry.name}/`;
+    }
+}
+
 function readFileItems(fileItems, callback) {
     let dirs = [];
     const files = [];
@@ -19,11 +29,11 @@ function readFileItems(fileItems, callback) {
         const item = fileItems[i];
         const fileEntry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : item;
         fileEntry.id = uuid();
-        fileEntry.path = fileEntry.path || '/';
+        files.push(fileEntry);
         if (fileEntry.isDirectory) {
             dirs.push(fileEntry);
         }
-        files.push(fileEntry);
+        setFilePath(fileEntry);
     }
     let fileEntryList = [], isReading = false, idx = 0;
     const readFiles = () => {
@@ -63,12 +73,8 @@ function readFileItems(fileItems, callback) {
                         results.forEach(fileEntry => {
                             fileEntry.id = uuid();
                             fileEntry.pid = dirEntry.id;
-                            fileEntry.path = fileEntry.path || '';
                             fileEntry.parentName = dirEntry.name;
-                            if (dirEntry.path) {
-                                fileEntry.path += dirEntry.path;
-                            }
-                            fileEntry.path += (dirEntry.name + '/');
+                            setFilePath(fileEntry, dirEntry);
                         });
                         fileEntryList = fileEntryList.concat(results);
                         readDir();
