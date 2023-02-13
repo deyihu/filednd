@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>File DND</title>
+<link rel="stylesheet" href="./lib/element-ui/lib/theme-chalk/index.css">
+
+<script src="./lib/vue.min.js"></script>
+<script src="./lib/element-ui/lib/index.js"></script>
+
+<style type="text/css">
+    html,
+    body {
+        margin: 0px;
+        height: 100%;
+        width: 100%
+    }
+
+    .container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+    }
+
+    .dragzone {
+        width: 60%;
+        height: 70%;
+        border: 2px dashed #dfdfdf;
+        margin-left: 20px;
+        margin-top: 20px;
+        font-size: 40px;
+        color: gray;
+        text-align: center;
+        padding-top: 200px;
+    }
+
+    .vuecontainer {
+        height: 100%;
+        overflow: scroll;
+        width: 30%;
+    }
+</style>
+
+<script type="text/javascript" src="./../dist/filednd.js"></script>
+
+<body>
+    <div class="container" id="container">
+        <div class="dragzone" ref="dragzone">
+            Drag File Here
+        </div>
+        <div class="vuecontainer">
+            <el-tree :data="treeData">
+                <span class="custom-tree-node" slot-scope="{ node, data }">
+                    <span>
+                        <i v-if="data.isDirectory" class="el-icon-folder-add"></i>
+                        <i v-else class="el-icon-document"></i>
+                    </span>
+                    <span>{{ data.label }}</span>
+                </span>
+            </el-tree>
+        </div>
+    </div>
+
+    <script>
+
+        const vm = new Vue({
+            el: '#container',
+            data: {
+                treeData: []
+            },
+            mounted() {
+                const fileDND = this.fileDND = new filednd.FileDND(this.$refs.dragzone);
+                fileDND.dnd((files) => {
+                    console.log(files);
+                    this.treeData = fileDND.toTree();
+                });
+            }
+        })
+
+    </script>
+</body>
+
+</html>
