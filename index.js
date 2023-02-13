@@ -200,4 +200,9 @@ export class FileDND {
         });
 
     }
+
+    clear() {
+        this.files = [];
+        return this;
+    }
 }
