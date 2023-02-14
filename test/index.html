@@ -52,10 +52,9 @@
 </style>
 
 <script src="https://unpkg.com/filednd/dist/filednd.js"></script>
-
 <body>
     <div class="container" id="container">
-        <div class="dragzone" ref="dragzone">
+        <div class="dragzone" ref="dragzone" v-loading="loading">
             Drag File Here
         </div>
         <div class="tree">
@@ -70,8 +69,9 @@
             </el-tree>
         </div>
         <div class="fileview">
+            <div v-if="fileError&&files">file type not support</div>
             <el-image v-if="currentFile.url" :src="currentFile.url"></el-image>
-            <div id="code" :style="{ height: '900px',width:'600px' }">
+            <div id="code" :style="{ height: '900px',width:'600px' }" v-show="codeShow">
             </div>
         </div>
 
@@ -80,6 +80,7 @@
             const vm = new Vue({
                 el: '#container',
                 data: {
+                    loading: false,
                     jsonCmOptions: {
                         tabSize: 4,
                         styleActiveLine: true,
@@ -90,6 +91,8 @@
                         theme: 'lesser-dark'
                     },
                     treeData: [],
+                    codeShow: false,
+                    fileError: false,
                     currentFile: {
                         text: false,
                         url: ''
@@ -102,23 +105,28 @@
                             return;
                         }
                         this.currentFile.url = '';
-                        this.currentFile.text = false;
+                        this.fileError = false;
                         if (this.isImage(file)) {
                             this.currentFile = {
                                 url: URL.createObjectURL(file)
                             }
+                            this.editor.setValue('');
+                            this.codeShow = false;
                             return;
                         }
                         let name = file.name;
                         name = name.substring(name.lastIndexOf('.') + 1, Infinity);
-                        if (!['html', 'json', 'js', 'geojson'].includes(name)) {
+                        if (!['html', 'json', 'js', 'geojson', 'css'].includes(name)) {
+                            this.codeShow = false;
+                            this.fileError = true;
                             return;
                         }
                         const fileReader = new FileReader();
                         fileReader.onload = () => {
-                            // this.currentFile.text = fileReader.result || '';
-                            this.currentFile.text = true;
-                            this.editor.setValue(fileReader.result);
+                            this.codeShow = true;
+                            setTimeout(() => {
+                                this.editor.setValue(fileReader.result);
+                            }, 100);
                         }
                         fileReader.readAsText(file);
                     },
@@ -142,6 +150,12 @@
                         console.log(files);
                         this.treeData = fileDND.toTree();
                         this.files = files;
+                    });
+                    fileDND.on('readstart', target => {
+                        this.loading = true;
+                    });
+                    fileDND.on('readend', target => {
+                        this.loading = false;
                     });
                     var editor = this.editor = CodeMirror(document.getElementById("code"), {
                         tabSize: 4,
