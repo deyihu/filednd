@@ -4,10 +4,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>File DND</title>
 <link rel="stylesheet" href="./lib/element-ui/lib/theme-chalk/index.css">
+<link rel="stylesheet" href="./lib/codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="./lib/codemirror/theme/lesser-dark.css">
 
 <script src="./lib/vue.min.js"></script>
 <script src="./lib/element-ui/lib/index.js"></script>
-
+<script type="text/javascript" src="./lib/codemirror/lib/codemirror.min.js"></script>
+<script type="text/javascript" src="./lib/codemirror/mode/javascript/javascript.js"></script>
+<script type="text/javascript" src="./lib/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<script type="text/javascript" src="./lib/vue-codemirror.js"></script>
 <style type="text/css">
     html,
     body {
@@ -23,7 +28,7 @@
     }
 
     .dragzone {
-        width: 60%;
+        width: 30%;
         height: 70%;
         border: 2px dashed #dfdfdf;
         margin-left: 20px;
@@ -34,7 +39,7 @@
         padding-top: 200px;
     }
 
-    .vuecontainer {
+    .tree {
         height: 100%;
         overflow: scroll;
         width: 30%;
@@ -48,8 +53,8 @@
         <div class="dragzone" ref="dragzone">
             Drag File Here
         </div>
-        <div class="vuecontainer">
-            <el-tree :data="treeData">
+        <div class="tree">
+            <el-tree :data="treeData" @node-click="treeNodeClick">
                 <span class="custom-tree-node" slot-scope="{ node, data }">
                     <span>
                         <i v-if="data.isDirectory" class="el-icon-folder-add"></i>
@@ -59,20 +64,80 @@
                 </span>
             </el-tree>
         </div>
+        <div class="fileview">
+            <el-image v-if="currentFile.url" :src="currentFile.url"></el-image>
+            <codemirror v-show="currentFile.text" v-model="currentFile.text" :options="jsonCmOptions"
+                :style="{ height: '100%',width:'600px' }">
+            </codemirror>
+
+        </div>
     </div>
 
     <script>
-
+        Vue.use(window.VueCodemirror);
         const vm = new Vue({
             el: '#container',
             data: {
-                treeData: []
+                jsonCmOptions: {
+                    tabSize: 4,
+                    styleActiveLine: true,
+                    lineNumbers: true,
+                    lineWrapping: false,
+                    line: true,
+                    mode: 'application/json',
+                    theme: 'lesser-dark'
+                },
+                treeData: [],
+                currentFile: {
+                    text: ``,
+                    url: ''
+                }
+            },
+            methods: {
+                treeNodeClick(data) {
+                    const file = this.getFile(data);
+                    if (!file || file.isDirectory) {
+                        return;
+                    }
+                    this.currentFile.url = '';
+                    this.currentFile.text = '';
+                    if (this.isImage(file)) {
+                        this.currentFile = {
+                            url: URL.createObjectURL(file)
+                        }
+                        return;
+                    }
+                    let name = file.name;
+                    name = name.substring(name.lastIndexOf('.') + 1, Infinity);
+                    if (!['html', 'json', 'js', 'geojson'].includes(name)) {
+                        return;
+                    }
+                    const fileReader = new FileReader();
+                    fileReader.onload = () => {
+                        this.currentFile.text = fileReader.result;
+                    }
+                    fileReader.readAsText(file);
+                },
+                isImage(file) {
+                    const type = file.type;
+                    if (type.indexOf('image/') > -1) {
+                        return true;
+                    }
+                    const name = file.name.substring(file.name.lastIndexOf('.') + 1, Infinity);
+                    return ['png', 'jpg', 'jpeg', 'svg', 'webp'].includes(name.toLowerCase());
+                },
+                getFile(node) {
+                    return this.files.filter(file => {
+                        return file.id === node.id;
+                    })[0];
+                }
             },
             mounted() {
                 const fileDND = this.fileDND = new filednd.FileDND(this.$refs.dragzone);
                 fileDND.dnd((files) => {
                     console.log(files);
                     this.treeData = fileDND.toTree();
+                    this.files = files;
                 });
             }
         })
