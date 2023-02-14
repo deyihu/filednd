@@ -44,6 +44,11 @@
         overflow: scroll;
         width: 30%;
     }
+
+    .CodeMirror {
+        height: 100%;
+        width: 600px;
+    }
 </style>
 
 <script src="https://unpkg.com/filednd/dist/filednd.js"></script>
@@ -66,83 +71,91 @@
         </div>
         <div class="fileview">
             <el-image v-if="currentFile.url" :src="currentFile.url"></el-image>
-            <codemirror v-show="currentFile.text" v-model="currentFile.text" :options="jsonCmOptions"
-                :style="{ height: '100%',width:'600px' }">
-            </codemirror>
-
+            <div id="code" :style="{ height: '900px',width:'600px' }">
+            </div>
         </div>
-    </div>
 
-    <script>
-        Vue.use(window.VueCodemirror);
-        const vm = new Vue({
-            el: '#container',
-            data: {
-                jsonCmOptions: {
-                    tabSize: 4,
-                    styleActiveLine: true,
-                    lineNumbers: true,
-                    lineWrapping: false,
-                    line: true,
-                    mode: 'application/json',
-                    theme: 'lesser-dark'
-                },
-                treeData: [],
-                currentFile: {
-                    text: ``,
-                    url: ''
-                }
-            },
-            methods: {
-                treeNodeClick(data) {
-                    const file = this.getFile(data);
-                    if (!file || file.isDirectory) {
-                        return;
+        <script>
+            Vue.use(window.VueCodemirror);
+            const vm = new Vue({
+                el: '#container',
+                data: {
+                    jsonCmOptions: {
+                        tabSize: 4,
+                        styleActiveLine: true,
+                        lineNumbers: true,
+                        lineWrapping: false,
+                        line: true,
+                        mode: 'application/json',
+                        theme: 'lesser-dark'
+                    },
+                    treeData: [],
+                    currentFile: {
+                        text: false,
+                        url: ''
                     }
-                    this.currentFile.url = '';
-                    this.currentFile.text = '';
-                    if (this.isImage(file)) {
-                        this.currentFile = {
-                            url: URL.createObjectURL(file)
+                },
+                methods: {
+                    treeNodeClick(data) {
+                        const file = this.getFile(data);
+                        if (!file || file.isDirectory) {
+                            return;
                         }
-                        return;
+                        this.currentFile.url = '';
+                        this.currentFile.text = false;
+                        if (this.isImage(file)) {
+                            this.currentFile = {
+                                url: URL.createObjectURL(file)
+                            }
+                            return;
+                        }
+                        let name = file.name;
+                        name = name.substring(name.lastIndexOf('.') + 1, Infinity);
+                        if (!['html', 'json', 'js', 'geojson'].includes(name)) {
+                            return;
+                        }
+                        const fileReader = new FileReader();
+                        fileReader.onload = () => {
+                            // this.currentFile.text = fileReader.result || '';
+                            this.currentFile.text = true;
+                            this.editor.setValue(fileReader.result);
+                        }
+                        fileReader.readAsText(file);
+                    },
+                    isImage(file) {
+                        const type = file.type;
+                        if (type.indexOf('image/') > -1) {
+                            return true;
+                        }
+                        const name = file.name.substring(file.name.lastIndexOf('.') + 1, Infinity);
+                        return ['png', 'jpg', 'jpeg', 'svg', 'webp'].includes(name.toLowerCase());
+                    },
+                    getFile(node) {
+                        return this.files.filter(file => {
+                            return file.id === node.id;
+                        })[0];
                     }
-                    let name = file.name;
-                    name = name.substring(name.lastIndexOf('.') + 1, Infinity);
-                    if (!['html', 'json', 'js', 'geojson'].includes(name)) {
-                        return;
-                    }
-                    const fileReader = new FileReader();
-                    fileReader.onload = () => {
-                        this.currentFile.text = fileReader.result;
-                    }
-                    fileReader.readAsText(file);
                 },
-                isImage(file) {
-                    const type = file.type;
-                    if (type.indexOf('image/') > -1) {
-                        return true;
-                    }
-                    const name = file.name.substring(file.name.lastIndexOf('.') + 1, Infinity);
-                    return ['png', 'jpg', 'jpeg', 'svg', 'webp'].includes(name.toLowerCase());
-                },
-                getFile(node) {
-                    return this.files.filter(file => {
-                        return file.id === node.id;
-                    })[0];
+                mounted() {
+                    const fileDND = this.fileDND = new filednd.FileDND(this.$refs.dragzone);
+                    fileDND.dnd((files) => {
+                        console.log(files);
+                        this.treeData = fileDND.toTree();
+                        this.files = files;
+                    });
+                    var editor = this.editor = CodeMirror(document.getElementById("code"), {
+                        tabSize: 4,
+                        styleActiveLine: true,
+                        // lineNumbers: true,
+                        // lineWrapping: false,
+                        line: true,
+                        mode: 'application/json',
+                        theme: 'lesser-dark'
+                    });
                 }
-            },
-            mounted() {
-                const fileDND = this.fileDND = new filednd.FileDND(this.$refs.dragzone);
-                fileDND.dnd((files) => {
-                    console.log(files);
-                    this.treeData = fileDND.toTree();
-                    this.files = files;
-                });
-            }
-        })
+            })
 
-    </script>
+        </script>
 </body>
 
 </html>
