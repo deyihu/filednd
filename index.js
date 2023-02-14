@@ -1,4 +1,6 @@
 
+import mitt from 'mitt';
+
 function dragEvent(event) {
     event.stopPropagation();
     event.preventDefault();
@@ -120,6 +122,7 @@ export class FileDND {
         this.ele = ele;
         this.files = [];
         this._bindEvents = false;
+        this.emitter = mitt();
     }
 
     dnd(callback) {
@@ -140,12 +143,14 @@ export class FileDND {
                 event.preventDefault();
                 const df = event.dataTransfer;
                 const items = df.items;
+                this.emitter.emit('readstart', this);
                 readFileItems(items, (files) => {
                     const callback = this.dndBackCall.bind(this);
                     this.files = files;
                     callback(files.filter(file => {
                         return file instanceof File;
                     }));
+                    this.emitter.emit('readend', this);
                 });
             };
             this.dropEvent = dropEvent;
@@ -164,6 +169,7 @@ export class FileDND {
         }
         this.ele = null;
         this.files = null;
+        this.emitter.all.clear();
         return this;
     }
 
@@ -210,6 +216,16 @@ export class FileDND {
 
     clear() {
         this.files = [];
+        return this;
+    }
+
+    on(eventName, handler) {
+        this.emitter.on(eventName, handler);
+        return this;
+    }
+
+    off(eventName, handler) {
+        this.emitter.off(eventName, handler);
         return this;
     }
 }
