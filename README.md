@@ -74,6 +74,28 @@ fdnd.dnd((files) => {
  fdnd.dispose();
 ```
 
+### events
+
+* readstart
+
+```js
+const readStart = () => {
+
+}
+fdnd.on('readstart', readStart)
+//  fdnd.off('readstart', readStart)
+```
+
+* readend
+
+```js
+const readEnd = () => {
+
+}
+fdnd.on('readend', readEnd)
+//  fdnd.off('readstart', readEnd)
+```
+
 ## Links
 
 [file-type](https://github.com/sindresorhus/file-type) `If you want to determine the file type, you can refer to this library`
