@@ -73,3 +73,7 @@ fdnd.dnd((files) => {
 ```js
  fdnd.dispose();
 ```
+
+## Links
+
+[file-type](https://github.com/sindresorhus/file-type) `If you want to determine the file type, you can refer to this library`
