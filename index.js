@@ -14,12 +14,18 @@ const uuid = () => {
     return uid;
 };
 
+function mergeArray(array1, array2) {
+    for (let i = 0, len = array2.length; i < len; i++) {
+        array1.push(array2[i]);
+    }
+    return array1;
+}
+
 function setFilePath(fileEntry, parentFileEntry) {
     const folder = parentFileEntry ? parentFileEntry.path : '/';
     if (fileEntry.isFile) {
         fileEntry.path = `${folder}${fileEntry.name}`;
-    }
-    if (fileEntry.isDirectory) {
+    } else if (fileEntry.isDirectory) {
         fileEntry.path = `${folder}${fileEntry.name}/`;
     }
 }
@@ -78,7 +84,7 @@ function readFileItems(fileItems, callback) {
                             fileEntry.parentName = dirEntry.name;
                             setFilePath(fileEntry, dirEntry);
                         });
-                        fileEntryList = fileEntryList.concat(results);
+                        mergeArray(fileEntryList, results);
                         readDir();
                     } else {
                         idx++;
@@ -206,7 +212,7 @@ export class FileDND {
                     files.push(child);
                 }
             });
-            fileMap[id].children = dirs.concat(files);
+            fileMap[id].children = mergeArray(dirs, files);
         }
         return Object.values(fileMap).filter(d => {
             return !d.parentName;
