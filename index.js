@@ -202,6 +202,7 @@ export class FileDND {
                 fileMap[pid].children.push(fileMap[id]);
             }
         });
+        // sort children Folder first, file later
         for (const id in fileMap) {
             const children = fileMap[id].children;
             const dirs = [], files = [];
@@ -218,6 +219,35 @@ export class FileDND {
             return !d.parentName;
         });
 
+    }
+
+    toFolderTree() {
+        const nodes = this.toTree() || [];
+        let text = '';
+        const loopNode = (node, level = 1) => {
+            const { name } = node;
+            let prefix = '├─ ';
+            if (level > 1) {
+                const array = [];
+                while (array.length < level - 1) {
+                    array.push('| ');
+                }
+                prefix = array.join('').toString() + prefix;
+            }
+            text += `${prefix}${name} \n`;
+            const children = node.children;
+            if (children && children.length) {
+                level++;
+                children.forEach(child => {
+                    loopNode(child, level);
+                });
+            }
+        };
+        return nodes.map(node => {
+            text = '';
+            loopNode(node);
+            return text;
+        }).join('').toString();
     }
 
     clear() {
