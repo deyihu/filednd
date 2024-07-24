@@ -61,6 +61,25 @@ fdnd.dnd((files) => {
 ```js
   const treeData = fdnd.toTree();
 ```
+* toFolderTree() `Convert file tree to markdown directory text `
+
+```js
+  const text = fdnd.toFolderTree();
+```
+```
+├─ src 
+| ├─ assets 
+| | ├─ vue.svg 
+| ├─ components 
+| | ├─ HelloWorld.vue 
+| ├─ App.vue 
+| ├─ common.js 
+| ├─ draw.vue 
+| ├─ fly.vue 
+| ├─ main.js 
+| ├─ style.css 
+
+```
 
 * clear() `clear all files`
 
