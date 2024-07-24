@@ -87,7 +87,7 @@ fdnd.dnd((files) => {
  fdnd.clear();
 ```
 
-* dispose() ``
+* dispose() 
 
 ```js
  fdnd.dispose();
